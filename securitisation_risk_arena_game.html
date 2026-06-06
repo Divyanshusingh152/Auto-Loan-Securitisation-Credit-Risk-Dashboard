@@ -1,0 +1,383 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .arena { padding: 1rem 0; max-width: 680px; }
+  .header { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; }
+  .pool-tag { font-size: 11px; color: var(--color-text-tertiary); letter-spacing: 0.05em; text-transform: uppercase; }
+  .score-bar { display: flex; gap: 8px; }
+  .score-pill { font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 999px; border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); color: var(--color-text-secondary); }
+  .score-pill.danger { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+  .score-pill.success { background: #EAF3DE; color: #3B6D11; border-color: #97C459; }
+  .score-pill.warn { background: #FAEEDA; color: #854F0B; border-color: #EF9F27; }
+  .title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); margin-top: 6px; }
+  .subtitle { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1rem; }
+  .kpi { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.75rem; }
+  .kpi-label { font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 4px; }
+  .kpi-val { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+  .kpi-val.red { color: #A32D2D; }
+  .kpi-val.green { color: #3B6D11; }
+  .kpi-val.amber { color: #854F0B; }
+  .section { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .section-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .event-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 0.9rem 1rem; margin-bottom: 0.75rem; }
+  .event-card.active { border-color: #378ADD; background: #E6F1FB; }
+  .event-card.active .event-title { color: #0C447C; }
+  .event-card.resolved-good { border-color: #639922; background: #EAF3DE; }
+  .event-card.resolved-bad { border-color: #A32D2D; background: #FCEBEB; }
+  .event-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px; }
+  .event-desc { font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 0.75rem; }
+  .event-meta { font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 0.75rem; }
+  .choices { display: flex; flex-direction: column; gap: 6px; }
+  .choice-btn { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 0.6rem 0.9rem; font-size: 13px; color: var(--color-text-primary); cursor: pointer; text-align: left; transition: background 0.15s; }
+  .choice-btn:hover { background: var(--color-background-secondary); }
+  .choice-btn:disabled { opacity: 0.5; cursor: default; }
+  .feedback { font-size: 13px; padding: 0.6rem 0.9rem; border-radius: var(--border-radius-md); margin-top: 0.5rem; line-height: 1.5; }
+  .feedback.good { background: #EAF3DE; color: #27500A; }
+  .feedback.bad { background: #FCEBEB; color: #791F1F; }
+  .feedback.ok { background: #FAEEDA; color: #633806; }
+  .progress-bar { height: 6px; background: var(--color-background-secondary); border-radius: 999px; overflow: hidden; margin-top: 0.5rem; }
+  .progress-fill { height: 100%; border-radius: 999px; transition: width 0.4s; }
+  .stress-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .stress-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 0.6rem; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+  .stress-card:hover { background: var(--color-background-secondary); }
+  .stress-card.selected { border-color: #378ADD; background: #E6F1FB; }
+  .stress-card.selected .stress-name { color: #0C447C; }
+  .stress-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+  .stress-mult { font-size: 11px; color: var(--color-text-tertiary); }
+  .stress-result { margin-top: 0.75rem; font-size: 13px; color: var(--color-text-secondary); }
+  .stress-num { font-size: 20px; font-weight: 500; }
+  .waterfall { display: flex; align-items: flex-end; gap: 4px; height: 120px; margin-top: 0.75rem; }
+  .wf-bar { flex: 1; border-radius: 4px 4px 0 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: var(--color-text-primary); transition: height 0.4s; }
+  .wf-label { font-size: 10px; color: var(--color-text-tertiary); text-align: center; margin-top: 4px; }
+  .wf-col { flex: 1; display: flex; flex-direction: column; }
+  .final-screen { text-align: center; padding: 2rem 1rem; }
+  .final-score { font-size: 48px; font-weight: 500; color: var(--color-text-primary); }
+  .final-grade { font-size: 18px; font-weight: 500; margin-top: 4px; }
+  .final-msg { font-size: 14px; color: var(--color-text-secondary); margin-top: 0.75rem; line-height: 1.6; max-width: 480px; margin-left: auto; margin-right: auto; }
+  .btn-primary { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 0.6rem 1.25rem; font-size: 14px; color: var(--color-text-primary); cursor: pointer; margin-top: 1.25rem; }
+  .btn-primary:hover { background: var(--color-background-tertiary); }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; margin-right: 4px; }
+  .tag-high { background: #FCEBEB; color: #A32D2D; }
+  .tag-med { background: #FAEEDA; color: #854F0B; }
+  .tag-low { background: #EAF3DE; color: #3B6D11; }
+</style>
+
+<div class="arena">
+  <h2 class="sr-only">Securitisation Risk Arena — interactive risk management simulation for ZAAUTO2024-1 pool</h2>
+
+  <div class="header">
+    <div class="header-top">
+      <span class="pool-tag">ZAAUTO2024-1 · Oct 2024 · ₹31.78 Cr pool</span>
+      <div class="score-bar">
+        <span class="score-pill" id="round-pill">Round 1 / 5</span>
+        <span class="score-pill" id="score-pill">Score: 0</span>
+        <span class="score-pill" id="health-pill">CE: 100%</span>
+      </div>
+    </div>
+    <div class="title">Securitisation Risk Arena</div>
+    <div class="subtitle">You are the lead analyst. Make the right calls to protect the AAA tranche.</div>
+    <div class="progress-bar" style="margin-top:10px">
+      <div class="progress-fill" id="progress-fill" style="width:0%; background:#378ADD;"></div>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">30+ DPD rate</div><div class="kpi-val red" id="kpi-dpd">14.11%</div></div>
+    <div class="kpi"><div class="kpi-label">ECL provision</div><div class="kpi-val amber" id="kpi-ecl">₹1.17 Cr</div></div>
+    <div class="kpi"><div class="kpi-label">Excess spread</div><div class="kpi-val green" id="kpi-spread">₹10.3 L</div></div>
+    <div class="kpi"><div class="kpi-label">Coll. efficiency</div><div class="kpi-val green" id="kpi-coll">110.2%</div></div>
+  </div>
+
+  <div id="game-area"></div>
+</div>
+
+<script>
+const EVENTS = [
+  {
+    id: 1,
+    title: "DPD trigger breach — 30+ DPD hits 14.11%",
+    desc: "The pool's 30+ DPD rate has breached the 5% early-warning trigger. The trustee is requesting an explanation. What action do you recommend first?",
+    meta: "Risk level: HIGH · Affects: Senior AAA tranche · Trigger threshold: 5%",
+    tag: "high",
+    choices: [
+      { text: "Activate enhanced surveillance and escalate to servicer for immediate collection review", score: 30, quality: "good", fb: "Correct. Enhanced surveillance + servicer escalation is the RBI-aligned response. Roll rate matrix shows Stage 2→3 migration accelerating — early intervention can arrest further deterioration." },
+      { text: "Wait one more month to see if DPD naturally corrects", score: 5, quality: "bad", fb: "Risky call. Delinquency at 14.11% has been rising since Dec 2023. Waiting without action risks breaching additional covenants and triggering a servicer event of default." },
+      { text: "Reduce the ECL provision to show better pool health metrics", score: 0, quality: "bad", fb: "Incorrect and potentially fraudulent. ECL must reflect actual Stage 3 exposure (₹91.9L balance, 81.94% PD). Reducing provisions artificially misrepresents the pool to investors." },
+      { text: "Issue an investor notice and recommend increased credit enhancement", score: 20, quality: "ok", fb: "Reasonable but incomplete. Investor notice is appropriate, but CE increase alone doesn't address the root cause. Pair it with servicer-level collection strategy changes." }
+    ]
+  },
+  {
+    id: 2,
+    title: "Vintage divergence — 2022 cohort loss curve accelerating",
+    desc: "Static pool analysis shows 2022-Q1 through Q4 cohorts at 1.75% cumulative net loss by Month 30, vs 0.6% for 2021 and 2023 vintages. CRISIL has flagged this in a surveillance review.",
+    meta: "Risk level: MEDIUM · Affects: Future pool ratings · Benchmark: 2021/2023 vintage < 0.8%",
+    tag: "med",
+    choices: [
+      { text: "Tighten underwriting — exclude 2022-style borrower profiles from future pools", score: 30, quality: "good", fb: "Correct. Vintage analysis is precisely designed to inform future origination standards. 2022 cohort divergence likely reflects higher LTV ratios or income volatility post-COVID. Exclusion criteria should target CIBIL < 700 and LTV > 80%." },
+      { text: "Blend 2022 vintage into overall pool average to dilute the signal", score: 0, quality: "bad", fb: "This is exactly the analytical failure that caused the 2008 GFC. Dynamic averaging diluted deteriorating 2006-07 US mortgage originations. Vintage cohorts must be tracked independently." },
+      { text: "Request additional credit enhancement of 2-3% for future deals with similar profiles", score: 25, quality: "good", fb: "Good structural response. Rating agencies (S&P, CRISIL) require CE buffers calibrated to vintage loss curves. A 2-3% top-up on the subordination ratio is appropriate here." },
+      { text: "No action — vintage divergence is normal and self-corrects over time", score: 5, quality: "bad", fb: "Incorrect. Vintage curves are permanent records — a 2022 cohort at 1.75% by Month 30 will not 'self-correct'. Cumulative loss is monotonically increasing." }
+    ]
+  },
+  {
+    id: 3,
+    title: "Stage 3 ECL concentration — 40.81% of provision in 6.6% of pool",
+    desc: "Stage 3 assets (33 loans, ₹91.9L balance) carry ₹472.2L of ECL — 40.81% of total provision. Average PD is 81.94% and LGD is 56.3%. Recovery team reports slow legal processes.",
+    meta: "Risk level: MEDIUM · Stage 3 loans: 33 of 500 · Avg DPD: 90+ · LGD: 56.3%",
+    tag: "med",
+    choices: [
+      { text: "Accelerate recovery — appoint a specialised auto loan recovery agent and initiate SARFAESI proceedings", score: 30, quality: "good", fb: "Correct. SARFAESI Act (2002) allows secured creditors to recover loans without court intervention. For auto loans, this means repossession and auction. Faster recovery reduces LGD from 56.3% toward the 40-45% range typical for auto ABS." },
+      { text: "Write off Stage 3 loans immediately and focus on Stage 1 and 2", score: 10, quality: "ok", fb: "Premature write-off destroys recovery value. Auto loans carry physical collateral (vehicles) — LGD of 56.3% implies 43.7% recovery rate. A systematic recovery process is more value-preserving." },
+      { text: "Reclassify some Stage 3 loans back to Stage 2 to reduce provision", score: 0, quality: "bad", fb: "Impermissible under IFRS 9 / Ind AS 109. Stage reclassification requires actual improvement in credit quality (e.g. restructured performing loan). Reclassifying to reduce provision is a reporting violation." },
+      { text: "Review and revise LGD assumptions downward based on current vehicle auction prices", score: 20, quality: "ok", fb: "Partially correct. LGD assumptions should be reviewed quarterly using current vehicle market data. However, revisions must be based on actual auction evidence, not assumptions. Check secondary market auto prices vs loan origination values." }
+    ]
+  },
+  {
+    id: 4,
+    title: "Stress test — crisis scenario approaching mezzanine threshold",
+    desc: "Under the Crisis scenario (4x default rate, LGD = 65%), annual projected loss reaches ₹2.33 Cr against available CE of ₹2.71 Cr — coverage ratio drops to 2.71x, nearing S&P AAAsf minimum of 3.0x.",
+    meta: "Risk level: LOW-MED · CE coverage at base: 25.9x · At crisis: 2.71x · S&P min: 3.0x",
+    tag: "med",
+    choices: [
+      { text: "Recommend topping up the reserve account now, before crisis conditions materialise", score: 30, quality: "good", fb: "Proactive and correct. Reserve account top-up improves CE coverage ratio from 2.71x to above 3.0x. Under S&P AAAsf criteria, maintaining 3.0x+ base case coverage is required to preserve AAA rating." },
+      { text: "Conclude that 2.71x is close enough — no action needed", score: 5, quality: "bad", fb: "Risky. S&P explicitly requires 3.0x–4.0x base case loss coverage for AAAsf. A 2.71x coverage puts the AAA rating at risk of downgrade in a severe stress event, impacting senior investor returns." },
+      { text: "Restructure the waterfall to redirect mezzanine interest to senior principal", score: 15, quality: "ok", fb: "Structurally possible but legally complex. Waterfall amendments require trustee consent and investor vote. It would take 60-90 days — too slow if crisis conditions arrive quickly. Reserve account top-up is faster." },
+      { text: "Communicate stress test findings to investors transparently via quarterly report", score: 20, quality: "ok", fb: "Good governance practice. Investor transparency is required under SEBI regulations and trust deed obligations. However, disclosure alone without remediation action is insufficient — pair with reserve account top-up." }
+    ]
+  },
+  {
+    id: 5,
+    title: "IL&FS moment — servicer concentration risk detected",
+    desc: "Pool data shows 38% of collections routed through a single servicer (HDFC Bank). A regulatory review has flagged servicer concentration. What structural safeguard do you recommend?",
+    meta: "Risk level: HIGH · Single servicer concentration: 38% · RBI MHP/MRR: 10% per tranche",
+    tag: "high",
+    choices: [
+      { text: "Require backup servicer appointment and set HHI concentration limit at 30% per servicer", score: 30, quality: "good", fb: "Correct. Post-IL&FS, RBI's 2021 securitisation guidelines (RBI/2021-22/85) emphasise servicer diversification. A backup servicer + HHI cap ensures collections continue if a primary servicer faces liquidity stress." },
+      { text: "Reduce pool size by prepaying the HDFC Bank-serviced loans", score: 10, quality: "ok", fb: "Extreme and costly. Prepaying performing loans reduces pool factor and excess spread. Servicer diversification is structurally cheaper than forced prepayment." },
+      { text: "Increase collection efficiency target to 120% to compensate for the concentration risk", score: 5, quality: "bad", fb: "Collection efficiency measures performance, not structural risk. An CE target of 120% doesn't protect against servicer default — it just raises a bar that becomes irrelevant if the servicer fails." },
+      { text: "Accept the concentration risk — HDFC Bank is too big to fail", score: 0, quality: "bad", fb: "Dangerous assumption. IL&FS was also considered systematically important. No institution is 'too big to fail' from a securitisation structural risk perspective. The 2018 crisis proved this." }
+    ]
+  }
+];
+
+const STRESS_SCENARIOS = [
+  { name: "Base case", mult: 1.0, lossAnnual: 0.40, ecl: 1.17, ce: 25.90, color: "#639922" },
+  { name: "Moderate", mult: 1.5, lossAnnual: 0.47, ecl: 1.85, ce: 9.54, color: "#BA7517" },
+  { name: "Severe", mult: 2.5, lossAnnual: 1.27, ecl: 3.30, ce: 5.02, color: "#D85A30" },
+  { name: "Crisis", mult: 4.0, lossAnnual: 2.33, ecl: 9.19, ce: 2.71, color: "#A32D2D" }
+];
+
+let state = {
+  round: 0,
+  score: 0,
+  ceHealth: 100,
+  answered: [],
+  phase: "events",
+  selectedStress: 0,
+  done: false
+};
+
+function updateHeader() {
+  document.getElementById("round-pill").textContent = state.phase === "events"
+    ? `Round ${Math.min(state.round + 1, 5)} / 5`
+    : "Stress Lab";
+  document.getElementById("score-pill").textContent = `Score: ${state.score}`;
+  const hp = document.getElementById("health-pill");
+  hp.textContent = `CE: ${state.ceHealth}%`;
+  hp.className = "score-pill " + (state.ceHealth > 60 ? "success" : state.ceHealth > 30 ? "warn" : "danger");
+  const pct = state.phase === "events"
+    ? (state.round / 5) * 80
+    : 80 + (state.score / 150) * 20;
+  document.getElementById("progress-fill").style.width = Math.min(pct, 100) + "%";
+}
+
+function updateKPIs() {
+  const stress = STRESS_SCENARIOS[state.selectedStress];
+  const dpdBase = 14.11;
+  const dpdMod = dpdBase * (1 + (state.selectedStress * 0.15));
+  document.getElementById("kpi-dpd").textContent = dpdMod.toFixed(2) + "%";
+  document.getElementById("kpi-ecl").textContent = "₹" + stress.ecl.toFixed(2) + " Cr";
+  document.getElementById("kpi-spread").textContent = state.selectedStress < 2 ? "₹10.3 L" : (state.selectedStress === 2 ? "₹4.1 L" : "₹-ve");
+  document.getElementById("kpi-coll").textContent = state.selectedStress < 2 ? "110.2%" : (state.selectedStress === 2 ? "96.3%" : "83.1%");
+  document.getElementById("kpi-dpd").className = "kpi-val " + (dpdMod > 10 ? "red" : dpdMod > 5 ? "amber" : "green");
+  document.getElementById("kpi-ecl").className = "kpi-val " + (stress.ecl > 3 ? "red" : stress.ecl > 1.5 ? "amber" : "green");
+  document.getElementById("kpi-spread").className = "kpi-val " + (state.selectedStress < 2 ? "green" : "red");
+  document.getElementById("kpi-coll").className = "kpi-val " + (state.selectedStress < 2 ? "green" : "amber");
+}
+
+function renderEventRound() {
+  const ev = EVENTS[state.round];
+  const ans = state.answered[state.round];
+  const area = document.getElementById("game-area");
+
+  let choicesHTML = ev.choices.map((c, i) => {
+    let cls = "choice-btn";
+    if (ans !== undefined) cls += " " + (i === ans ? (ev.choices[i].quality === "good" ? " resolved-good" : " resolved-bad") : "");
+    return `<button class="${cls}" onclick="handleChoice(${i})" ${ans !== undefined ? "disabled" : ""}>${c.text}</button>`;
+  }).join("");
+
+  let feedbackHTML = "";
+  if (ans !== undefined) {
+    const c = ev.choices[ans];
+    feedbackHTML = `<div class="feedback ${c.quality === 'good' ? 'good' : c.quality === 'ok' ? 'ok' : 'bad'}">
+      <strong>${c.quality === 'good' ? '✓ Strong call' : c.quality === 'ok' ? '→ Acceptable' : '✗ Weak call'}</strong> — ${c.fb}
+    </div>`;
+  }
+
+  const tagCls = ev.tag === "high" ? "tag-high" : ev.tag === "med" ? "tag-med" : "tag-low";
+  const tagLabel = ev.tag === "high" ? "High risk" : ev.tag === "med" ? "Medium risk" : "Low risk";
+
+  area.innerHTML = `
+    <div class="section">
+      <div class="section-title">Live event — scenario ${state.round + 1} of 5</div>
+      <div class="event-card ${ans !== undefined ? (ev.choices[ans].quality === 'good' ? 'resolved-good' : 'resolved-bad') : 'active'}">
+        <span class="tag ${tagCls}">${tagLabel}</span>
+        <div class="event-title" style="margin-top:6px;">${ev.title}</div>
+        <div class="event-desc">${ev.desc}</div>
+        <div class="event-meta">${ev.meta}</div>
+        <div class="choices">${choicesHTML}</div>
+        ${feedbackHTML}
+      </div>
+      ${ans !== undefined && state.round < 4 ? `<button class="btn-primary" onclick="nextRound()">Next scenario →</button>` : ""}
+      ${ans !== undefined && state.round === 4 ? `<button class="btn-primary" onclick="goToStress()">Proceed to Stress Lab →</button>` : ""}
+    </div>`;
+}
+
+function handleChoice(i) {
+  if (state.answered[state.round] !== undefined) return;
+  const ev = EVENTS[state.round];
+  const c = ev.choices[i];
+  state.answered[state.round] = i;
+  state.score += c.score;
+  if (c.quality === "bad") state.ceHealth = Math.max(0, state.ceHealth - 15);
+  else if (c.quality === "ok") state.ceHealth = Math.max(0, state.ceHealth - 5);
+  updateHeader();
+  renderEventRound();
+}
+
+function nextRound() {
+  state.round++;
+  updateHeader();
+  renderEventRound();
+}
+
+function goToStress() {
+  state.phase = "stress";
+  state.round = 5;
+  updateHeader();
+  renderStressLab();
+}
+
+function renderStressLab() {
+  const area = document.getElementById("game-area");
+  const s = STRESS_SCENARIOS[state.selectedStress];
+  const maxLoss = 2.5;
+  const maxECL = 10;
+  const maxCE = 26;
+
+  const wfData = [
+    { label: "Collections", h: 100, color: "#1D9E75" },
+    { label: "Trustee fee", h: 5, color: "#888780" },
+    { label: "Sr. interest", h: 28, color: "#378ADD" },
+    { label: "Sr. principal", h: 40, color: "#185FA5" },
+    { label: "Mezz int.", h: 15, color: "#EF9F27" },
+    { label: "Mezz princ.", h: Math.max(0, 20 - state.selectedStress * 6), color: "#BA7517" },
+    { label: "Net loss", h: Math.min(90, state.selectedStress * 22), color: "#E24B4A" },
+    { label: "Equity", h: Math.max(2, 18 - state.selectedStress * 5), color: "#D4537E" }
+  ];
+
+  const wfBars = wfData.map(b => `
+    <div class="wf-col">
+      <div class="wf-bar" style="height:${b.h}%; background:${b.color}; color:#fff; font-size:9px;">${b.h > 15 ? Math.round(b.h) : ""}</div>
+      <div class="wf-label">${b.label}</div>
+    </div>`).join("");
+
+  const stressCards = STRESS_SCENARIOS.map((sc, i) => `
+    <div class="stress-card ${state.selectedStress === i ? 'selected' : ''}" onclick="selectStress(${i})">
+      <div class="stress-name">${sc.name}</div>
+      <div class="stress-mult">${sc.mult}x default</div>
+    </div>`).join("");
+
+  const ceStatus = s.ce >= 3.0 ? "good" : s.ce >= 2.0 ? "ok" : "bad";
+  const ceMsg = s.ce >= 3.0 ? "AAA rating maintained" : s.ce >= 2.0 ? "Rating under watch" : "Mezzanine at risk";
+
+  area.innerHTML = `
+    <div class="section">
+      <div class="section-title">Stress Lab — what-if scenario modelling</div>
+      <div style="margin-bottom:0.75rem;font-size:13px;color:var(--color-text-secondary);">Select a stress scenario to see how the ZAAUTO2024-1 pool reacts. Your CE health carries over from your event decisions.</div>
+      <div class="stress-grid">${stressCards}</div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:1rem;">
+        <div style="text-align:center;">
+          <div class="kpi-label">Annual projected loss</div>
+          <div class="stress-num" style="color:${s.color}">₹${s.lossAnnual.toFixed(2)} Cr</div>
+          <div style="height:6px;background:var(--color-background-secondary);border-radius:999px;margin-top:6px;overflow:hidden;">
+            <div style="height:100%;border-radius:999px;background:${s.color};width:${Math.min((s.lossAnnual/maxLoss)*100,100).toFixed(0)}%;transition:width 0.4s;"></div>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div class="kpi-label">ECL provision required</div>
+          <div class="stress-num" style="color:${s.color}">₹${s.ecl.toFixed(2)} Cr</div>
+          <div style="height:6px;background:var(--color-background-secondary);border-radius:999px;margin-top:6px;overflow:hidden;">
+            <div style="height:100%;border-radius:999px;background:${s.color};width:${Math.min((s.ecl/maxECL)*100,100).toFixed(0)}%;transition:width 0.4s;"></div>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div class="kpi-label">CE coverage ratio</div>
+          <div class="stress-num" style="color:${s.ce>=3?'#3B6D11':s.ce>=2?'#854F0B':'#A32D2D'}">${s.ce.toFixed(2)}x</div>
+          <div class="feedback ${ceStatus}" style="font-size:11px;padding:3px 8px;margin-top:6px;">${ceMsg}</div>
+        </div>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <div class="kpi-label" style="margin-bottom:6px;">Cash flow waterfall — priority allocation</div>
+        <div class="waterfall">${wfBars}</div>
+      </div>
+
+      <button class="btn-primary" onclick="showFinal()" style="margin-top:1.25rem;">View your final score ↗</button>
+    </div>`;
+
+  updateKPIs();
+}
+
+function selectStress(i) {
+  state.selectedStress = i;
+  renderStressLab();
+  updateKPIs();
+}
+
+function showFinal() {
+  const pct = Math.round((state.score / 150) * 100);
+  let grade, msg, color;
+  if (pct >= 85) { grade = "Senior Analyst — AAA Rating"; color = "#3B6D11"; msg = "Exceptional risk management. You correctly identified DPD trigger breach actions, applied vintage analysis discipline, maintained IFRS 9 integrity, and protected the CE coverage ratio. Rating agency surveillance would be satisfied with your pool management." }
+  else if (pct >= 65) { grade = "Analyst — BBB Watch"; color = "#854F0B"; msg = "Solid performance with room to improve. You made some conservative calls but hesitated on a few critical decisions. Review the SARFAESI recovery process and S&P AAAsf CE coverage requirements." }
+  else if (pct >= 40) { grade = "Junior Analyst — On Watch"; color = "#D85A30"; msg = "Several decisions weakened the pool's credit position. Key misses: vintage blending (never blend cohorts), provision reduction (IFRS 9 violation), and HDFC concentration risk. Review the 2008 GFC case study — those same errors triggered systemic collapse." }
+  else { grade = "Trainee — Pool in Distress"; color = "#A32D2D"; msg = "The pool has suffered significant CE erosion under your watch. Critical errors in provision management and stress scenario assessment. Study DPD roll rate analysis and IFRS 9 staging rules before the next deal." }
+
+  document.getElementById("progress-fill").style.width = "100%";
+  document.getElementById("game-area").innerHTML = `
+    <div class="section final-screen">
+      <div class="kpi-label">Your final rating</div>
+      <div class="final-score" style="color:${color}">${pct}%</div>
+      <div class="final-grade" style="color:${color}">${grade}</div>
+      <div class="final-msg">${msg}</div>
+      <div style="margin-top:1.25rem;font-size:13px;color:var(--color-text-tertiary);">Score: ${state.score} / 150 · CE health remaining: ${state.ceHealth}% · Pool: ZAAUTO2024-1</div>
+      <button class="btn-primary" onclick="restartGame()">Play again</button>
+      <button class="btn-primary" style="margin-left:8px;" onclick="sendPrompt('Explain the IFRS 9 ECL staging rules used in the Risk Arena game')">Explain IFRS 9 staging ↗</button>
+    </div>`;
+}
+
+function restartGame() {
+  state = { round: 0, score: 0, ceHealth: 100, answered: [], phase: "events", selectedStress: 0, done: false };
+  updateHeader();
+  updateKPIs();
+  renderEventRound();
+}
+
+updateHeader();
+updateKPIs();
+renderEventRound();
+</script>
